@@ -9,25 +9,9 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "minigames.db")
 def get_connection():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
 def init_db():
-    
-    # 1. Cerrar conexiones previas
-    try:
-        conn = get_connection()
-        conn.close()
-    except:
-        pass
-
-    # 2. Borrar la DB si no está bloqueada
-    try:
-        if os.path.exists(DB_PATH):
-            os.remove(DB_PATH)
-    except PermissionError:
-        print("DB bloqueada, no se puede borrar ahora")
-        return
         
     conn = get_connection()
     c = conn.cursor()
