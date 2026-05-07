@@ -34,8 +34,6 @@ def get_last_round_number(game_id):
 def render_admin():
     st.title("🔧 Control de Partida")
     
-    st.write("ENTRA EN ADMIN")
-    
     # Botón para cargar juegos desde game_data.py
     if st.sidebar.button("📥 Cargar juegos de ejemplo"):
         seed_games_and_rounds()
@@ -46,7 +44,7 @@ def render_admin():
     games = get_all_games()
     if not games:
         st.warning("No hay juegos creados.")
-        return
+        st.stop()
     
     # Filtrar solo los juegos pendientes
     pending_games = [g for g in games if g["status"] == "pending"]
@@ -55,9 +53,9 @@ def render_admin():
         lb = get_leaderboard()
         render_leaderboard(lb, "🏆 Clasificación Final")
         st.sidebar.success("🎉 Todos los juegos han sido completados")
-        return
+        st.stop()
     
-# Selección de juego
+    # Selección de juego
     game_options = {g["title"]: g["game_id"] for g in pending_games}
     sel_game = st.sidebar.selectbox("Seleccionar Juego", list(game_options.keys()))
     game_id = game_options[sel_game]

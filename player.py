@@ -53,7 +53,7 @@ def render_player():
     
     game_id=current_game["game_id"]
     
-  # 2. Obtener datos de la ultima ronda activa
+    # 2. Obtener datos de la ultima ronda activa
     active_round = get_active_round_for_player(game_id)
 
     if not active_round:
@@ -421,7 +421,7 @@ def _render_round_results(rnd, player_id):
     st.markdown("### 📋 Clasificación general")
     for i, row in enumerate(lb):
         medal = medals[i] if i < 3 else f"{i+1}."
-        is_me = row["id"] == player_id
+        is_me = row["player_id"] == player_id
         highlight = "border: 2px solid #FFD700;" if is_me else ""
         score = row["total_score"]
         sign = "+" if score > 0 else ""
