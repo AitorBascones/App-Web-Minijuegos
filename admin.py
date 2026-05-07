@@ -39,7 +39,6 @@ def render_admin():
     # Botón para cargar juegos desde game_data.py
     if st.sidebar.button("📥 Cargar juegos de ejemplo"):
         seed_games_and_rounds()
-        st.write("SEED EJECUTADO")
         st.success("Juegos cargados correctamente")
         st.rerun()
 
@@ -53,6 +52,8 @@ def render_admin():
     pending_games = [g for g in games if g["status"] == "pending"]
 
     if not pending_games:
+        lb = get_leaderboard()
+        render_leaderboard(lb, "🏆 Clasificación Final")
         st.sidebar.success("🎉 Todos los juegos han sido completados")
         return
     
@@ -133,7 +134,7 @@ def _render_round_simple_control(rnd, game):
     with cols[2]:
         if status == "active":
             if st.button("⏹️ Cerrar Ronda", key=f"stop_{rnd['round_id']}", use_container_width=True):
-                _calculate_scores_internal(rnd, game)
+                _calculate_scores_internal(rnd)
                 update_round_status(rnd["round_id"], "results")
                 
                 #Si es la ultima ronda se cierra el jeugo
@@ -155,9 +156,9 @@ def _calculate_scores_internal(rnd):
         if game_id == 1:
             score_game1(rnd["round_id"])
         elif game_id == 2:
-            score_game2(rnd["round_id"])
+            score_game2(rnd["round_id"],game_id)
         elif game_id == 3:
             correct_val = float(rnd.get("correct_answer") or 0)
-            score_game3(rnd["round_id"], correct_val)
+            score_game3(rnd["round_id"])
     except Exception as e:
         st.error(f"Error al puntuar: {e}")

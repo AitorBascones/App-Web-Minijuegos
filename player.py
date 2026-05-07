@@ -48,10 +48,13 @@ def render_player():
         _render_waiting_for_game()
         return
     
+    if not isinstance(current_game, dict):
+        current_game = dict(current_game)
+    
     game_id=current_game["game_id"]
     
   # 2. Obtener datos de la ultima ronda activa
-    active_round = get_active_round_for_game(game_id)
+    active_round = get_active_round_for_player(game_id)
 
     if not active_round:
         _render_waiting_for_round()
@@ -344,7 +347,7 @@ def _render_game3_answer(rnd, player_id, answered_rounds):
 # Results screen
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _render_round_results(rnd, player_id, edition_id):
+def _render_round_results(rnd, player_id):
     scores = get_round_scores(rnd["round_id"])
     game_id = rnd["game_id"]
 
@@ -414,7 +417,7 @@ def _render_round_results(rnd, player_id, edition_id):
     st.markdown("---")
     
     # Overall leaderboard
-    lb = get_leaderboard(edition_id)
+    lb = get_leaderboard()
     st.markdown("### 📋 Clasificación general")
     for i, row in enumerate(lb):
         medal = medals[i] if i < 3 else f"{i+1}."

@@ -155,6 +155,28 @@ def get_all_rounds(game_id):
         result.append(d)
     return result
 
+def get_active_round_for_player(game_id: int):
+    """
+    Devuelve la ronda actual visible para el jugador.
+    Incluye todos los estados: announcing, betting, active, results.
+    Los jugadores deben ver la ronda en cualquiera de estos estados.
+    """
+    conn = get_connection()
+    cur = conn.execute("""
+        SELECT * FROM rounds
+        WHERE game_id = ? AND status IN ('announcing', 'betting', 'active', 'results')
+        ORDER BY round_number DESC
+        LIMIT 1
+    """, (game_id,))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+    # BUG FIX 4: parsear options desde JSON
+    d = dict(row)
+    d["options"] = json.loads(d["options"])
+    return d
+
 def get_active_round_for_game(game_id):
     conn = get_connection()
     cur = conn.execute("""
