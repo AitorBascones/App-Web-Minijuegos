@@ -99,7 +99,7 @@ def get_player(player_id: int):
 
 def get_all_players():
     conn = get_connection()
-    rows = conn.execute("SELECT * FROM players").fetchall()
+    rows = conn.execute("SELECT * FROM players ORDER BY player_id").fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -146,7 +146,7 @@ def get_round(round_id: int):
 
 def get_all_rounds(game_id):
     conn = get_connection()
-    rows = conn.execute("SELECT * FROM rounds WHERE game_id=?", (game_id,)).fetchall()
+    rows = conn.execute("SELECT * FROM rounds WHERE game_id=? ORDER BY round_id", (game_id,)).fetchall()
     conn.close()
     result = []
     for r in rows:
@@ -333,7 +333,7 @@ def get_active_round():
     row = conn.execute(
         """SELECT r.* FROM rounds r
            WHERE r.status IN ('announcing','betting','active','results')
-           ORDER BY r.roun_id DESC LIMIT 1"""
+           ORDER BY r.round_id DESC LIMIT 1"""
     ).fetchone()
     conn.close()
     if not row: return None

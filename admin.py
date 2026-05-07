@@ -84,7 +84,7 @@ def render_admin():
 
          # Control de rondas
         for rnd in rounds:
-            _render_round_simple_control(rnd, game)
+            _render_round_simple_control(rnd)
 
         if game["status"] == "active":
             if st.button("🏁 Finalizar Juego", use_container_width=True):
@@ -100,7 +100,7 @@ def render_admin():
             st.rerun()
 
 
-def _render_round_simple_control(rnd, game):
+def _render_round_simple_control(rnd):
     st.markdown(f"**Ronda {rnd['round_number']}: {rnd['topic']}**")
     
     status = rnd["status"]

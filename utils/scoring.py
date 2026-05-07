@@ -34,7 +34,7 @@ def score_game1(round_id: int):
 
         double_bet = ans.get("double_bet", 0)
         final = base * 2 if double_bet else base
-        save_score(ans["player_id"], round_id, game_id,base, final)
+        save_score(ans["player_id"], round_id, game_id, final)
 
     return get_round_scores(round_id)
 
@@ -75,7 +75,7 @@ def score_game2(round_id: int, game_id: int):
 
         double_bet = ans.get("double_bet", 0)
         final = base * 2 if double_bet else base
-        save_score(ans["player_id"], round_id, game_id,base, final)
+        save_score(ans["player_id"], round_id, game_id,final)
 
     # Store which option won as correct_answer
     winner = max(vote_count, key=vote_count.get)
@@ -133,7 +133,7 @@ def score_game3(round_id: int):
 
         double_bet = ans.get("double_bet", 0)
         final = base * 2 if double_bet else base
-        save_score(ans["player_id"], round_id, game_id, base, final)
+        save_score(ans["player_id"], round_id, game_id,final)
 
 
     for ans in invalid_players:
