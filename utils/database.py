@@ -165,7 +165,7 @@ def get_active_round_for_player(game_id: int):
     cur = conn.execute("""
         SELECT * FROM rounds
         WHERE game_id = ? AND status IN ('announcing', 'betting', 'active', 'results')
-        ORDER BY round_number DESC
+        ORDER BY round_number ASC
         LIMIT 1
     """, (game_id,))
     row = cur.fetchone()
@@ -347,8 +347,11 @@ def seed_games_and_rounds():
     conn = get_connection()
     
     # Borrar juegos anteriores
+    conn.execute("DELETE FROM scores")
+    conn.execute("DELETE FROM answers")
     conn.execute("DELETE FROM rounds")
     conn.execute("DELETE FROM games")
+    conn.execute("DELETE FROM players")
     
     cur = conn.execute("SELECT COUNT(*) FROM games")
     
