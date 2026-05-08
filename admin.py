@@ -179,7 +179,7 @@ def _render_round_simple_control(rnd, all_rounds):
     
     # 2. Fase de Juego (Activar)
     with cols[1]:
-        if status == "betting":
+        if status == "betting" and bet_count == total_p:
             if st.button("▶️ Empezar Juego", key=f"start_{rnd['round_id']}", type="primary", use_container_width=True):
                 update_round_status(rnd["round_id"], "active")
                 st.rerun()
