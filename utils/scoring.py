@@ -32,7 +32,7 @@ def score_game1(round_id: int):
             elif hits == 1:
                 base = -5
             else:
-                base = 0
+                base = -10
 
         double_bet = ans.get("double_bet", 0)
         final = base * 2 if double_bet else base
