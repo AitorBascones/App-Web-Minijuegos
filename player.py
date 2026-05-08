@@ -2,8 +2,6 @@
 Player view — mobile-first interface for joining and playing.
 Polls the DB to stay in sync with the admin's state machine.
 """
-import json
-import datetime
 from collections import Counter
 import streamlit as st
 from utils.database import *
@@ -50,7 +48,7 @@ def _render_vote_bars(votes: dict, winner: str | None = None):
         )
 
 
-def _render_distance_bars(ranked: list, correct_value: float):
+def _render_distance_bars(ranked: list):
     """Barras de proximidad para Game 3. Más larga = más cercano."""
     valid = [r for r in ranked if r.get("diff") is not None]
     if not valid:
@@ -159,94 +157,94 @@ def render_player():
     if not get_player(player_id):
         st.session_state.clear()
         st.rerun()
-        return
+    else:
 
-    player_name = st.session_state["player_name"]
-    player_avatar = st.session_state["player_avatar"]
+        player_name = st.session_state["player_name"]
+        player_avatar = st.session_state["player_avatar"]
 
-    st.markdown(
-        f"<div style='text-align:right;color:rgba(255,255,255,0.6);font-size:0.85rem;'>"
-        f"{player_avatar} {player_name}</div>",
-        unsafe_allow_html=True,
-    )
+        st.markdown(
+            f"<div style='text-align:right;color:rgba(255,255,255,0.6);font-size:0.85rem;'>"
+            f"{player_avatar} {player_name}</div>",
+            unsafe_allow_html=True,
+        )
 
-    # All dynamic game content lives inside a single st.empty() slot so that on
-    # every rerun the slot is replaced atomically — no old elements bleed through.
-    # IMPORTANT: time.sleep() + st.rerun() must live *outside* the `with` block.
-    # Calling st.rerun() inside the block aborts it before __exit__ can commit
-    # the new slot content, which is exactly what causes the stale-element bug.
-    _sleep = 0
-    _slot = st.empty()
+        # All dynamic game content lives inside a single st.empty() slot so that on
+        # every rerun the slot is replaced atomically — no old elements bleed through.
+        # IMPORTANT: time.sleep() + st.rerun() must live *outside* the `with` block.
+        # Calling st.rerun() inside the block aborts it before __exit__ can commit
+        # the new slot content, which is exactly what causes the stale-element bug.
+        _sleep = 0
+        _slot = st.empty()
 
-    with _slot.container():
-        current_game = get_current_game()
+        with _slot.container():
+            current_game = get_current_game()
 
-        # Admin ha compartido la clasificación: mostrarla en lugar del flujo normal
-        if current_game and current_game.get("show_leaderboard"):
-            _render_pushed_leaderboard(player_id)
-            st.markdown("---")
-            if st.button("🔄 Actualizar", use_container_width=True):
-                st.rerun()
-            _sleep = 3
-
-        elif not current_game:
-            all_games = get_all_games()
-            if any(g["status"] == "finished" for g in all_games):
-                _render_final_screen()
-            else:
-                _render_waiting_for_game()
-                _sleep = 3
-
-        else:
-            game_id = current_game["game_id"]
-            active_round = get_active_round_for_player(game_id)
-
-            if not active_round:
-                _render_waiting_for_round()
-                _sleep = 3
-
-            else:
-                # Detect round/status transitions → purge stale widget state
-                round_key = f"{active_round['round_id']}_{active_round['status']}"
-                if st.session_state.get("_round_key") != round_key:
-                    st.session_state["_round_key"] = round_key
-                    for key in list(st.session_state.keys()):
-                        if key.startswith(("pos_", "num_")):
-                            del st.session_state[key]
-                    st.rerun()
-
-                round_status = active_round["status"]
-
-                if round_status == "announcing":
-                    _render_topic_announcement(active_round, current_game)
-                elif round_status == "betting":
-                    _render_betting_phase(active_round, player_id)
-                elif round_status == "active":
-                    _render_active_round(active_round, current_game, player_id)
-                elif round_status == "results":
-                    _render_round_results(active_round, player_id)
-
+            # Admin ha compartido la clasificación: mostrarla en lugar del flujo normal
+            if current_game and current_game.get("show_leaderboard"):
+                _render_pushed_leaderboard(player_id)
                 st.markdown("---")
                 if st.button("🔄 Actualizar", use_container_width=True):
                     st.rerun()
+                _sleep = 3
 
-                # Determine auto-refresh delay (applied after the with block)
-                if round_status in ("announcing", "betting", "results"):
-                    _sleep = 2
-                elif round_status == "active":
-                    answered_rounds = st.session_state.get("answered_rounds", set())
-                    already_answered = active_round["round_id"] in answered_rounds
-                    if not already_answered:
-                        existing = get_player_choice(player_id, active_round["round_id"])
-                        already_answered = bool(existing and existing.get("answer"))
-                    # 1s si aún no respondió (countdown visible) · 2s si espera resultados
-                    _sleep = 1 if not already_answered else 2
+            elif not current_game:
+                all_games = get_all_games()
+                if any(g["status"] == "finished" for g in all_games):
+                    _render_final_screen()
+                else:
+                    _render_waiting_for_game()
+                    _sleep = 3
 
-    # Sleep and rerun AFTER the container's __exit__ so the slot content is
-    # fully committed before the next script run begins.
-    if _sleep > 0:
-        time.sleep(_sleep)
-        st.rerun()
+            else:
+                game_id = current_game["game_id"]
+                active_round = get_active_round_for_player(game_id)
+
+                if not active_round:
+                    _render_waiting_for_round()
+                    _sleep = 3
+
+                else:
+                    # Detect round/status transitions → purge stale widget state
+                    round_key = f"{active_round['round_id']}_{active_round['status']}"
+                    if st.session_state.get("_round_key") != round_key:
+                        st.session_state["_round_key"] = round_key
+                        for key in list(st.session_state.keys()):
+                            if key.startswith(("pos_", "num_")):
+                                del st.session_state[key]
+                        st.rerun()
+
+                    round_status = active_round["status"]
+
+                    if round_status == "announcing":
+                        _render_topic_announcement(active_round, current_game)
+                    elif round_status == "betting":
+                        _render_betting_phase(active_round, player_id)
+                    elif round_status == "active":
+                        _render_active_round(active_round, current_game, player_id)
+                    elif round_status == "results":
+                        _render_round_results(active_round, player_id)
+
+                    st.markdown("---")
+                    if st.button("🔄 Actualizar", use_container_width=True):
+                        st.rerun()
+
+                    # Determine auto-refresh delay (applied after the with block)
+                    if round_status in ("announcing", "betting", "results"):
+                        _sleep = 2
+                    elif round_status == "active":
+                        answered_rounds = st.session_state.get("answered_rounds", set())
+                        already_answered = active_round["round_id"] in answered_rounds
+                        if not already_answered:
+                            existing = get_player_choice(player_id, active_round["round_id"])
+                            already_answered = bool(existing and existing.get("answer"))
+                        # 1s si aún no respondió (countdown visible) · 2s si espera resultados
+                        _sleep = 1 if not already_answered else 2
+
+        # Sleep and rerun AFTER the container's __exit__ so the slot content is
+        # fully committed before the next script run begins.
+        if _sleep > 0:
+            time.sleep(_sleep)
+            st.rerun()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -671,7 +669,7 @@ def _render_round_results(rnd, player_id):
             ranked = get_game3_ranked_answers(rnd["round_id"], correct_val)
             if ranked:
                 st.markdown("**Proximidad al valor correcto:**")
-                _render_distance_bars(ranked, correct_val)
+                _render_distance_bars(ranked)
         except Exception:
             pass
 

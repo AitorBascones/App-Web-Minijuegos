@@ -1,6 +1,6 @@
 import json
 from utils.database import (
-    get_round, get_round_answers, get_all_players, save_score,
+    get_round, get_round_answers, save_score,
     get_round_scores, set_round_correct_answer
 )
 
