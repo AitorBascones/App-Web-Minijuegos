@@ -186,7 +186,7 @@ def _render_round_simple_control(rnd, all_rounds):
     
     # 3. Fase de Cierre y Puntos
     with cols[2]:
-        if status == "active":
+        if status == "active" and ans_count == total_p:
             if st.button("⏹️ Cerrar Ronda", key=f"stop_{rnd['round_id']}", use_container_width=True):
                 _calculate_scores_internal(rnd)
                 update_round_status(rnd["round_id"], "results")
