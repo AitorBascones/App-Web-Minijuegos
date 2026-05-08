@@ -146,8 +146,11 @@ def _auto_submit_on_timeout(rnd: dict, game_id: int, player_id: int, answered_ro
 # ─────────────────────────────────────────────────────────────────────────────
 
 def render_player():
+    # Join screen wrapped in st.empty() so its elements are replaced atomically
+    # when the player transitions to the waiting screen.
     if "player_id" not in st.session_state:
-        _render_join_screen()
+        with st.empty().container():
+            _render_join_screen()
         return
 
     player_id = st.session_state["player_id"]
@@ -167,69 +170,82 @@ def render_player():
         unsafe_allow_html=True,
     )
 
-    current_game = get_current_game()
+    # All dynamic game content lives inside a single st.empty() slot so that on
+    # every rerun the slot is replaced atomically — no old elements bleed through.
+    # IMPORTANT: time.sleep() + st.rerun() must live *outside* the `with` block.
+    # Calling st.rerun() inside the block aborts it before __exit__ can commit
+    # the new slot content, which is exactly what causes the stale-element bug.
+    _sleep = 0
+    _slot = st.empty()
 
-    # Admin ha compartido la clasificación: mostrarla en lugar del flujo normal
-    if current_game and current_game.get("show_leaderboard"):
-        _render_pushed_leaderboard(player_id)
-        st.markdown("---")
-        if st.button("🔄 Actualizar", use_container_width=True):
-            st.rerun()
-        time.sleep(3)
-        st.rerun()
-        return
+    with _slot.container():
+        current_game = get_current_game()
 
-    if not current_game:
-        all_games = get_all_games()
-        if any(g["status"] == "finished" for g in all_games):
-            _render_final_screen()
+        # Admin ha compartido la clasificación: mostrarla en lugar del flujo normal
+        if current_game and current_game.get("show_leaderboard"):
+            _render_pushed_leaderboard(player_id)
+            st.markdown("---")
+            if st.button("🔄 Actualizar", use_container_width=True):
+                st.rerun()
+            _sleep = 3
+
+        elif not current_game:
+            all_games = get_all_games()
+            if any(g["status"] == "finished" for g in all_games):
+                _render_final_screen()
+            else:
+                _render_waiting_for_game()
+                _sleep = 3
+
         else:
-            _render_waiting_for_game()
-        return
+            game_id = current_game["game_id"]
+            active_round = get_active_round_for_player(game_id)
 
-    game_id = current_game["game_id"]
-    active_round = get_active_round_for_player(game_id)
+            if not active_round:
+                _render_waiting_for_round()
+                _sleep = 3
 
-    if not active_round:
-        _render_waiting_for_round()
-        return
+            else:
+                # Detect round/status transitions → purge stale widget state
+                round_key = f"{active_round['round_id']}_{active_round['status']}"
+                if st.session_state.get("_round_key") != round_key:
+                    st.session_state["_round_key"] = round_key
+                    for key in list(st.session_state.keys()):
+                        if key.startswith(("pos_", "num_")):
+                            del st.session_state[key]
+                    st.rerun()
 
-    # Detect round/status transitions → purge stale widget state and force a clean render
-    round_key = f"{active_round['round_id']}_{active_round['status']}"
-    if st.session_state.get("_round_key") != round_key:
-        st.session_state["_round_key"] = round_key
-        for key in list(st.session_state.keys()):
-            if key.startswith(("pos_", "num_")):
-                del st.session_state[key]
-        st.rerun()
+                round_status = active_round["status"]
 
-    round_status = active_round["status"]
+                if round_status == "announcing":
+                    _render_topic_announcement(active_round, current_game)
+                elif round_status == "betting":
+                    _render_betting_phase(active_round, player_id)
+                elif round_status == "active":
+                    _render_active_round(active_round, current_game, player_id)
+                elif round_status == "results":
+                    _render_round_results(active_round, player_id)
 
-    if round_status == "announcing":
-        _render_topic_announcement(active_round, current_game)
-    elif round_status == "betting":
-        _render_betting_phase(active_round, player_id)
-    elif round_status == "active":
-        _render_active_round(active_round, current_game, player_id)
-    elif round_status == "results":
-        _render_round_results(active_round, player_id)
+                st.markdown("---")
+                if st.button("🔄 Actualizar", use_container_width=True):
+                    st.rerun()
 
-    st.markdown("---")
-    if st.button("🔄 Actualizar", use_container_width=True):
-        st.rerun()
+                # Determine auto-refresh delay (applied after the with block)
+                if round_status in ("announcing", "betting", "results"):
+                    _sleep = 2
+                elif round_status == "active":
+                    answered_rounds = st.session_state.get("answered_rounds", set())
+                    already_answered = active_round["round_id"] in answered_rounds
+                    if not already_answered:
+                        existing = get_player_choice(player_id, active_round["round_id"])
+                        already_answered = bool(existing and existing.get("answer"))
+                    # 1s si aún no respondió (countdown visible) · 2s si espera resultados
+                    _sleep = 1 if not already_answered else 2
 
-    # Auto-refresh: 2s en espera/resultados, 1s en active (para que el countdown avance)
-    if round_status in ("announcing", "betting", "results"):
-        time.sleep(2)
-        st.rerun()
-    elif round_status == "active":
-        answered_rounds = st.session_state.get("answered_rounds", set())
-        already_answered = active_round["round_id"] in answered_rounds
-        if not already_answered:
-            existing = get_player_choice(player_id, active_round["round_id"])
-            already_answered = bool(existing and existing.get("answer"))
-        # 1s si aún no respondió (countdown visible) · 2s si espera resultados
-        time.sleep(1 if not already_answered else 2)
+    # Sleep and rerun AFTER the container's __exit__ so the slot content is
+    # fully committed before the next script run begins.
+    if _sleep > 0:
+        time.sleep(_sleep)
         st.rerun()
 
 
@@ -299,8 +315,6 @@ def _render_waiting_for_game():
             f"conectado{'s' if len(players)!=1 else ''} en sala</div>",
             unsafe_allow_html=True,
         )
-    time.sleep(3)
-    st.rerun()
 
 
 def _render_waiting_for_round():
@@ -311,8 +325,6 @@ def _render_waiting_for_round():
         "</div>",
         unsafe_allow_html=True,
     )
-    time.sleep(3)
-    st.rerun()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -329,7 +341,7 @@ def _render_topic_announcement(rnd, game):
         unsafe_allow_html=True,
     )
     st.markdown(
-        "<div class='notif-box'>📢 ¡Prepárate! El administrador abrirá la fase de apuesta pronto.</div>",
+        "<div class='notif-box'>🎲 Momento de apostar. El Señor Vascones recomienda riesgo. Calculado es opcional.</div>",
         unsafe_allow_html=True,
     )
     st.caption("💡 Dato del Señor Vascones: confía en tus instintos (o no, él tampoco lo sabe)")
@@ -384,9 +396,9 @@ def _render_betting_phase(rnd, player_id):
         return
 
     st.markdown(
-        "<h3 style='text-align:center;'>¿Quieres multiplicar tu puntuación ×2?</h3>"
+        "<h3 style='text-align:center;'>¿Quieres multiplicar tu puntuación?</h3>"
         "<p style='text-align:center;color:rgba(255,255,255,0.7);'>"
-        "Si apuestas doble, tu puntuación (positiva O negativa) se multiplicará por 2.</p>",
+        "Si apuestas doble, tu puntuación (positiva o negativa) se multiplicará por 2.</p>",
         unsafe_allow_html=True,
     )
     st.caption("⚠️ El Señor Vascones no se hace responsable de las decisiones tomadas bajo presión.")
@@ -558,7 +570,7 @@ def _render_game1_answer(rnd, player_id, answered_rounds):
                 st.session_state["answered_rounds"] = answered_rounds
                 st.rerun()
 
-    st.caption("💡 Si hay empate en posiciones, el sistema tomará el orden de arriba a abajo.")
+    st.caption("💡 El Señor Vascones recuerda: en matemáticas el orden importa. Aquí también te lo va a cobrar.")
 
 
 # ── Game 2: Preference ─────────────────────────────────────────────────────────
@@ -566,7 +578,7 @@ def _render_game1_answer(rnd, player_id, answered_rounds):
 def _render_game2_answer(rnd, player_id, answered_rounds):
     options = rnd["options"]
     st.markdown("### 🤔 ¿Qué prefieres?")
-    st.caption("Elige la opción que crees que votará la mayoría para ganar puntos.")
+    st.caption("Elige lo que crees que votará la mayoría. El Señor Vascones ya sabe tu respuesta.")
 
     for opt in options:
         if st.button(f"👉 {opt}", key=f"pref_{rnd['round_id']}_{opt}", use_container_width=True):
@@ -581,7 +593,7 @@ def _render_game2_answer(rnd, player_id, answered_rounds):
 
 def _render_game3_answer(rnd, player_id, answered_rounds):
     st.markdown("### 🎯 ¿Cuánto crees que es?")
-    st.caption("Escribe un número. ¡El más cercano gana más puntos!")
+    st.caption("Escribe un número. El Señor Vascones ya tiene el resultado exacto. Tú, probablemente no.")
 
     with st.form(f"game3_form_{rnd['round_id']}"):
         answer = st.text_input(
@@ -610,7 +622,7 @@ def _render_game3_answer(rnd, player_id, answered_rounds):
 def _render_game4_answer(rnd, player_id, answered_rounds):
     options = rnd["options"]
     st.markdown("### 🧠 ¿Cuál es la respuesta correcta?")
-    st.caption("Solo hay una respuesta correcta. ¡Decide rápido!")
+    st.caption("Solo una es correcta. Las otras tres las inventó el Señor Vascones a las 3 de la mañana.")
 
     col1, col2 = st.columns(2)
     cols = [col1, col2, col1, col2]
@@ -652,7 +664,7 @@ def _render_round_results(rnd, player_id):
         st.markdown(
             "<div class='topic-banner'>"
             "<h2>⏳ ¡Siguiente ronda en marcha!</h2>"
-            "<p>Actualiza para ver las apuestas.</p>"
+            "<p>El Señor Vascones ya está frotándose las manos.</p>"
             "</div>",
             unsafe_allow_html=True,
         )
@@ -932,7 +944,7 @@ def _render_final_screen():
     st.markdown(
         "<div class='topic-banner'>"
         "<h1>🏆 ¡Juego finalizado!</h1>"
-        "<p>Gracias por participar. ¡Aquí están los resultados finales!</p>"
+        "<p>El Señor Vascones ha revisado los números. Los resultados son definitivos e inapelables.</p>"
         "</div>",
         unsafe_allow_html=True,
     )

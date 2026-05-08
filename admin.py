@@ -1,8 +1,9 @@
 import streamlit as st
 import time
+import datetime
 from utils.database import *
 from utils.scoring import score_game1, score_game2, score_game3, score_game4, get_game2_vote_summary
-from utils.game_data import GAME_TEMPLATES
+from utils.game_data import GAME_TEMPLATES, ROUND_DURATIONS
 import json
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -119,10 +120,13 @@ def render_admin():
         if st.button("🔄 Actualizar Datos"):
             st.rerun()
 
-    # Auto-refresh: always while pending (lobby player count), or while rounds are open
+    # Auto-refresh: 1s while a round is active (timer), 3s otherwise (lobby/betting)
     game_now = get_game(game_id)
     all_rounds = get_all_rounds(game_id)
-    if game_now["status"] == "pending" or any(r["status"] in ("betting", "active") for r in all_rounds):
+    if any(r["status"] == "active" for r in all_rounds):
+        time.sleep(1)
+        st.rerun()
+    elif game_now["status"] == "pending" or any(r["status"] == "betting" for r in all_rounds):
         time.sleep(3)
         st.rerun()
 
@@ -148,6 +152,22 @@ def _render_round_simple_control(rnd, all_rounds):
         ans_count = count_answers_submitted(rnd["round_id"])
         st.write(f"✏️ Respuestas: {ans_count} / {total_p}")
         st.progress(ans_count / total_p if total_p > 0 else 0)
+
+        # Tiempo restante de la ronda
+        started_at = rnd.get("started_at")
+        duration = ROUND_DURATIONS.get(rnd["game_id"], 60)
+        if started_at:
+            start_dt = datetime.datetime.strptime(started_at, "%Y-%m-%d %H:%M:%S")
+            elapsed = (datetime.datetime.utcnow() - start_dt).total_seconds()
+            remaining = max(0, int(duration - elapsed))
+            mins, secs = divmod(remaining, 60)
+            timer_label = f"{mins:02d}:{secs:02d}"
+            if remaining == 0:
+                st.error(f"⏱️ Tiempo agotado — {timer_label}")
+            elif remaining <= 10:
+                st.warning(f"⏱️ Tiempo restante: **{timer_label}**")
+            else:
+                st.info(f"⏱️ Tiempo restante: **{timer_label}**")
 
     cols = st.columns(3)
 
