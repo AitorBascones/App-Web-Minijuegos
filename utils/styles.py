@@ -158,6 +158,10 @@ div[data-testid="stExpanderDetails"] {
     border-color: #FF6B6B !important;
     color: #FFFFFF !important;
 }
+
+[data-testid="stSidebarCollapseButton"] {
+    display: none;
+}
  
 [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] {
     background-color: rgba(255, 255, 255, 0.1) !important;
