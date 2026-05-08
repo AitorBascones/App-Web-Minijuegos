@@ -30,8 +30,21 @@ view = st.session_state["view"]
 #view="admin"
 
 if view == "admin":
-    from admin import render_admin
-    render_admin()
+    if not st.session_state.get("admin_auth"):
+        st.markdown("# 🔐 Acceso Administrador")
+        pwd = st.text_input("Contraseña", type="password")
+        if st.button("Entrar", type="primary"):
+            if pwd == "4321":
+                st.session_state["admin_auth"] = True
+                st.rerun()
+            else:
+                st.error("Contraseña incorrecta")
+        if st.button("← Volver"):
+            st.session_state["view"] = "home"
+            st.rerun()
+    else:
+        from admin import render_admin
+        render_admin()
 elif view == "play":
     from player import render_player
     render_player()
