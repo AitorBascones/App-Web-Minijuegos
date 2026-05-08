@@ -58,15 +58,15 @@ def score_game2(round_id: int, game_id: int):
         return []
 
     max_votes = max(vote_count.values())
-    min_votes = min(vote_count.values())
-    all_same = max_votes == min_votes
+    num_options_with_max = sum(1 for v in vote_count.values() if v == max_votes)
+    is_tie = num_options_with_max > 1
 
     for ans in answers:
         if ans["answer"] is None:
             base = 0
-        elif all_same:
-            base = 0
-        elif vote_count.get(ans["answer"], 0) == max_votes:
+        elif is_tie and vote_count.get(ans["answer"], 0) == max_votes:
+            base = 5
+        elif not is_tie and vote_count.get(ans["answer"], 0) == max_votes:
             base = 10
         else:
             base = -10
