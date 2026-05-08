@@ -8,7 +8,7 @@ from utils.styles import GLOBAL_CSS
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MiniGames 🎮",
+    page_title="Las Vascongadas 🎮",
     page_icon="🎮",
     layout="centered",
     initial_sidebar_state="expanded",
@@ -30,14 +30,27 @@ view = st.session_state["view"]
 #view="admin"
 
 if view == "admin":
-    from admin import render_admin
-    render_admin()
+    if not st.session_state.get("admin_auth"):
+        st.markdown("# 🔐 Acceso Administrador")
+        pwd = st.text_input("Contraseña", type="password")
+        if st.button("Entrar", type="primary"):
+            if pwd == "4321":
+                st.session_state["admin_auth"] = True
+                st.rerun()
+            else:
+                st.error("Contraseña incorrecta")
+        if st.button("← Volver"):
+            st.session_state["view"] = "home"
+            st.rerun()
+    else:
+        from admin import render_admin
+        render_admin()
 elif view == "play":
     from player import render_player
     render_player()
 else:
     # ── Landing / router ──────────────────────────────────────────────────────
-    st.markdown("# 🎮 MiniGames Competition")
+    st.markdown("# 🎮 Las Vascongadas")
     st.markdown("### Bienvenido a la plataforma de competición")
 
     st.markdown("---")
@@ -60,6 +73,6 @@ else:
     st.markdown("---")
     st.markdown(
         "<p style='text-align:center;color:rgba(255,255,255,0.4);font-size:0.85rem;'>"
-        "MiniGames Competition • Desarrollado con Streamlit</p>",
+        "Las Vascongadas • Desarrollado por el <b>Señor Vascones</b></p>",
         unsafe_allow_html=True,
     )
