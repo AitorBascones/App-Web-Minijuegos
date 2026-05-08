@@ -64,6 +64,7 @@ def render_admin():
     game_options = {g["title"]: g["game_id"] for g in controllable_games}
     sel_game = st.sidebar.selectbox("Seleccionar Juego", list(game_options.keys()))
     game_id = game_options[sel_game]
+    st.sidebar.caption("👑 Panel del Señor Vascones")
 
     tab_control, tab_leaderboard = st.tabs(["🎮 Flujo de Juego", "📊 Clasificación"])
     

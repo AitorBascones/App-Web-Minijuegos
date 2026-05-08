@@ -8,7 +8,7 @@ from utils.styles import GLOBAL_CSS
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MiniGames 🎮",
+    page_title="Las Vascongadas 🎮",
     page_icon="🎮",
     layout="centered",
     initial_sidebar_state="expanded",
@@ -50,7 +50,7 @@ elif view == "play":
     render_player()
 else:
     # ── Landing / router ──────────────────────────────────────────────────────
-    st.markdown("# 🎮 MiniGames Competition")
+    st.markdown("# 🎮 Las Vascongadas")
     st.markdown("### Bienvenido a la plataforma de competición")
 
     st.markdown("---")
@@ -73,6 +73,6 @@ else:
     st.markdown("---")
     st.markdown(
         "<p style='text-align:center;color:rgba(255,255,255,0.4);font-size:0.85rem;'>"
-        "MiniGames Competition • Desarrollado con Streamlit</p>",
+        "Las Vascongadas • Desarrollado por el <b>Señor Vascones</b></p>",
         unsafe_allow_html=True,
     )

@@ -194,6 +194,15 @@ def render_player():
         _render_waiting_for_round()
         return
 
+    # Detect round/status transitions → purge stale widget state and force a clean render
+    round_key = f"{active_round['round_id']}_{active_round['status']}"
+    if st.session_state.get("_round_key") != round_key:
+        st.session_state["_round_key"] = round_key
+        for key in list(st.session_state.keys()):
+            if key.startswith(("pos_", "num_")):
+                del st.session_state[key]
+        st.rerun()
+
     round_status = active_round["status"]
 
     if round_status == "announcing":
@@ -229,7 +238,12 @@ def render_player():
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _render_join_screen():
-    st.markdown("<h1 style='text-align:center;'>🎮 MiniGames</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>🎮 Las Vascongadas</h1>", unsafe_allow_html=True)
+    st.markdown(
+        "<p style='text-align:center;color:rgba(255,255,255,0.45);font-size:0.85rem;margin-top:-0.8rem;'>"
+        "Una producción del Señor Vascones 👑</p>",
+        unsafe_allow_html=True,
+    )
 
     players = get_all_players()
     if players:
@@ -275,7 +289,7 @@ def _render_waiting_for_game():
     st.markdown(
         "<div class='topic-banner'>"
         "<h2>⏳ Esperando a que el administrador seleccione un juego...</h2>"
-        "<p>Permanece atento.</p>"
+        "<p>El Señor Vascones está preparando algo épico...</p>"
         "</div>",
         unsafe_allow_html=True,
     )
@@ -293,7 +307,7 @@ def _render_waiting_for_round():
     st.markdown(
         "<div class='topic-banner'>"
         "<h2>⏳ Esperando la siguiente ronda...</h2>"
-        "<p>El administrador iniciará pronto.</p>"
+        "<p>El Señor Vascones está consultando sus fuentes secretas...</p>"
         "</div>",
         unsafe_allow_html=True,
     )
@@ -318,6 +332,7 @@ def _render_topic_announcement(rnd, game):
         "<div class='notif-box'>📢 ¡Prepárate! El administrador abrirá la fase de apuesta pronto.</div>",
         unsafe_allow_html=True,
     )
+    st.caption("💡 Dato del Señor Vascones: confía en tus instintos (o no, él tampoco lo sabe)")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -374,6 +389,7 @@ def _render_betting_phase(rnd, player_id):
         "Si apuestas doble, tu puntuación (positiva O negativa) se multiplicará por 2.</p>",
         unsafe_allow_html=True,
     )
+    st.caption("⚠️ El Señor Vascones no se hace responsable de las decisiones tomadas bajo presión.")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -450,6 +466,7 @@ def _render_already_answered(rnd, player_id, game_id):
         f"<b>{answered_count}/{total}</b> han respondido.</div>",
         unsafe_allow_html=True,
     )
+    st.caption("🕐 El Señor Vascones cronometra cada segundo de tu sufrimiento.")
 
     st.markdown(
         f"<div style='opacity:0.4;padding:0.4rem 0 0.8rem;'>"
@@ -711,6 +728,7 @@ def _render_round_results(rnd, player_id):
 
     # ── Puntuaciones de la ronda ────────────────────────────────────────────
     st.markdown("---")
+    st.caption("📜 El Señor Vascones ha revisado los resultados. Dice que no se esperaba esto de vosotros.")
     st.markdown("### 🏆 Puntuación de la ronda")
 
     # Para Game 4: badge ⚡ al más rápido entre los que acertaron
@@ -940,3 +958,8 @@ def _render_final_screen():
             f'</div>',
             unsafe_allow_html=True,
         )
+    st.markdown(
+        "<p style='text-align:center;color:rgba(255,255,255,0.4);font-size:0.85rem;margin-top:1.5rem;'>"
+        "Las Vascongadas • Juego diseñado por el <b>Señor Vascones</b></p>",
+        unsafe_allow_html=True,
+    )
