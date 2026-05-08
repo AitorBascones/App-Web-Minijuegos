@@ -189,8 +189,16 @@ def render_player():
 
             elif not current_game:
                 all_games = get_all_games()
-                if any(g["status"] == "finished" for g in all_games):
+                if all(g["status"] == "finished" for g in all_games):
                     _render_final_screen()
+
+                elif any(g["status"] == "finished" for g in all_games):
+                    _render_pushed_leaderboard(player_id)
+                    st.markdown("---")
+                    if st.button("🔄 Actualizar", use_container_width=True):
+                        st.rerun()
+                    _sleep = 3
+
                 else:
                     _render_waiting_for_game()
                     _sleep = 3
@@ -250,6 +258,13 @@ def render_player():
 # ─────────────────────────────────────────────────────────────────────────────
 # Join screen
 # ─────────────────────────────────────────────────────────────────────────────
+
+def render_label_board(player_id):
+    _render_pushed_leaderboard(player_id)
+    st.markdown("---")
+    if st.button("🔄 Actualizar", use_container_width=True):
+        st.rerun()
+    _sleep = 3
 
 def _render_join_screen():
     st.markdown("<h1 style='text-align:center;'>🎮 Las Vascongadas</h1>", unsafe_allow_html=True)
