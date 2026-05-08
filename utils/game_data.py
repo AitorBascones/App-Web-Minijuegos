@@ -47,24 +47,7 @@ GAME_TEMPLATES = [
                 "options": ["AQNHQV", "LQSA", "Aída", "Los Hombres de Paco"],
                 "correct_answer": '["Aída", "LQSA", "Los Hombres de Paco", "AQNHQV"]'
             },
-            {
-                "topic": "Redes Sociales",
-                "question": "Ordena estas redes sociales del AÑO DE CREACIÓN más antiguo al más reciente",
-                "options": ["YouTube", "Twitter/X", "Facebook", "TikTok"],
-                "correct_answer": '["Facebook", "YouTube", "Twitter/X", "TikTok"]'
-            },
-            {
-                "topic": "Taquilla mundial",
-                "question": "Ordena estas películas de MAYOR a MENOR recaudación en taquilla mundial",
-                "options": ["Avatar", "Titanic", "El Rey León (2019)", "Frozen II"],
-                "correct_answer": '["Avatar", "Titanic", "El Rey León (2019)", "Frozen II"]'
-            },
-            {
-                "topic": "Velocidad animal",
-                "question": "Ordena estos animales de MÁS RÁPIDO a MÁS LENTO",
-                "options": ["Avestruz", "Guepardo", "Caballo", "Elefante"],
-                "correct_answer": '["Guepardo", "Avestruz", "Caballo", "Elefante"]'
-            },
+
         ],
     },
 
@@ -137,33 +120,7 @@ GAME_TEMPLATES = [
                 ],
                 "correct_answer": None
             },
-            {
-                "topic": "Superpoderes",
-                "question": "¿Qué prefieres?",
-                "options": [
-                    "Poder volar a voluntad",
-                    "Ser invisible a voluntad"
-                ],
-                "correct_answer": None
-            },
-            {
-                "topic": "Vacaciones",
-                "question": "¿Qué prefieres?",
-                "options": [
-                    "Una semana en playa de lujo todo incluido",
-                    "Un mes de mochilero por Asia con presupuesto justo"
-                ],
-                "correct_answer": None
-            },
-            {
-                "topic": "Tecnología",
-                "question": "¿Qué prefieres?",
-                "options": [
-                    "Vivir sin internet para siempre",
-                    "Vivir sin música para siempre"
-                ],
-                "correct_answer": None
-            },
+
         ],
     },
 
@@ -215,95 +172,9 @@ GAME_TEMPLATES = [
                 "options": [],
                 "correct_answer": "551"
             },
-            {
-                "topic": "Cartografía mundial",
-                "question": "¿Cuántos países hay reconocidos en el mundo?",
-                "options": [],
-                "correct_answer": "195"
-            },
-            {
-                "topic": "Medicina básica",
-                "question": "¿Cuántos litros de sangre tiene de media el cuerpo humano?",
-                "options": [],
-                "correct_answer": "5"
-            },
-            {
-                "topic": "La gran muralla",
-                "question": "¿Cuántos kilómetros mide la Muralla China?",
-                "options": [],
-                "correct_answer": "21196"
-            },
-        ],
-    },
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # JUEGO 4: Trivia Relámpago (nuevo)
-    # ─────────────────────────────────────────────────────────────────────────
-    {
-        "title": "🧠 Trivia Relámpago",
-        "rounds": [
-            {
-                "topic": "Tecnología",
-                "question": "¿En qué año se fundó Google?",
-                "options": ["1994", "1996", "1998", "2000"],
-                "correct_answer": "1998"
-            },
-            {
-                "topic": "Ciencia",
-                "question": "¿Cuántos huesos tiene el cuerpo humano adulto?",
-                "options": ["156", "206", "256", "306"],
-                "correct_answer": "206"
-            },
-            {
-                "topic": "Geografía",
-                "question": "¿Cuál es el país más grande del mundo por superficie?",
-                "options": ["China", "Canadá", "EEUU", "Rusia"],
-                "correct_answer": "Rusia"
-            },
-            {
-                "topic": "Historia",
-                "question": "¿En qué año cayó el Muro de Berlín?",
-                "options": ["1985", "1987", "1989", "1991"],
-                "correct_answer": "1989"
-            },
-            {
-                "topic": "Fútbol",
-                "question": "¿Cuántos Balones de Oro tiene Cristiano Ronaldo?",
-                "options": ["4", "5", "6", "7"],
-                "correct_answer": "5"
-            },
-            {
-                "topic": "Naturaleza",
-                "question": "¿Cuántos corazones tiene un pulpo?",
-                "options": ["1", "2", "3", "4"],
-                "correct_answer": "3"
-            },
-            {
-                "topic": "Tecnología",
-                "question": "¿En qué año se lanzó el primer iPhone?",
-                "options": ["2005", "2007", "2009", "2011"],
-                "correct_answer": "2007"
-            },
-            {
-                "topic": "Cine",
-                "question": "¿Cuántos Oscars ganó la película Titanic (1997)?",
-                "options": ["9", "11", "13", "7"],
-                "correct_answer": "11"
-            },
-            {
-                "topic": "Astronomía",
-                "question": "¿Cuántos planetas tiene el Sistema Solar?",
-                "options": ["7", "8", "9", "10"],
-                "correct_answer": "8"
-            },
-            {
-                "topic": "Arte",
-                "question": "¿Quién pintó La Última Cena?",
-                "options": ["Miguel Ángel", "Rafael", "Leonardo da Vinci", "Botticelli"],
-                "correct_answer": "Leonardo da Vinci"
-            },
         ],
-    },
+    }
 ]
 
 AVATARS = [

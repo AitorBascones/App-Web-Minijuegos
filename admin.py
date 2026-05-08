@@ -2,7 +2,7 @@ import streamlit as st
 import time
 import datetime
 from utils.database import *
-from utils.scoring import score_game1, score_game2, score_game3, score_game4, get_game2_vote_summary
+from utils.scoring import score_game1, score_game2, score_game3
 from utils.game_data import GAME_TEMPLATES, ROUND_DURATIONS
 import json
 
@@ -215,7 +215,5 @@ def _calculate_scores_internal(rnd):
             score_game2(rnd["round_id"], game_id)
         elif game_id == 3:
             score_game3(rnd["round_id"])
-        elif game_id == 4:
-            score_game4(rnd["round_id"])
     except Exception as e:
         st.error(f"Error al puntuar: {e}")

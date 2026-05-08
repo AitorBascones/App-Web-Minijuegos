@@ -142,29 +142,3 @@ def get_game3_ranked_answers(round_id: int, correct_value: float = None):
         valid.sort(key=lambda x: (x["diff"] is None, x["diff"] or 0))
 
     return valid
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# GAME 4: "Trivia Relámpago"
-# Respuesta correcta = +10, incorrecta = -5; double_bet aplica
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def score_game4(round_id: int):
-    round_data = get_round(round_id)
-    correct = round_data["correct_answer"]
-    game_id = round_data["game_id"]
-    answers = get_round_answers(round_id)
-
-    for ans in answers:
-        if ans["answer"] is None:
-            base = 0
-        elif ans["answer"] == correct:
-            base = 10
-        else:
-            base = -5
-
-        double_bet = ans.get("double_bet", 0)
-        final = base * 2 if double_bet else base
-        save_score(ans["player_id"], round_id, game_id, final)
-
-    return get_round_scores(round_id)

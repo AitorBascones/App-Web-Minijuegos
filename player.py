@@ -455,8 +455,6 @@ def _render_active_round(rnd, game, player_id):
         _render_game2_answer(rnd, player_id, answered_rounds)
     elif game_type == 3:
         _render_game3_answer(rnd, player_id, answered_rounds)
-    elif game_type == 4:
-        _render_game4_answer(rnd, player_id, answered_rounds)
 
     # Auto-submit cuando el tiempo se agota (se evalúa tras renderizar widgets)
     if remaining == 0:
@@ -617,39 +615,6 @@ def _render_game3_answer(rnd, player_id, answered_rounds):
                     st.error("Por favor introduce solo números (puedes usar coma o punto decimal).")
 
 
-# ── Game 4: Trivia ─────────────────────────────────────────────────────────────
-
-def _render_game4_answer(rnd, player_id, answered_rounds):
-    options = rnd["options"]
-    st.markdown("### 🧠 ¿Cuál es la respuesta correcta?")
-    st.caption("Solo una es correcta. Las otras tres las inventó el Señor Vascones a las 3 de la mañana.")
-
-    col1, col2 = st.columns(2)
-    cols = [col1, col2, col1, col2]
-
-    for i, opt in enumerate(options[:4]):
-        label = _G4_LABELS[i]
-        color = _G4_COLORS[i]
-        with cols[i]:
-            st.markdown(
-                f"<div style='background:{color};border-radius:10px;padding:0.6rem 0.4rem;"
-                f"text-align:center;margin-bottom:0.3rem;'>"
-                f"<span style='color:white;font-size:0.75rem;font-weight:700;'>{label}</span><br>"
-                f"<span style='color:white;font-size:0.9rem;'>{opt}</span>"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
-            if st.button(
-                "Elegir",
-                key=f"g4_{rnd['round_id']}_{i}",
-                use_container_width=True,
-            ):
-                submit_answer(player_id, rnd["round_id"], opt)
-                answered_rounds.add(rnd["round_id"])
-                st.session_state["answered_rounds"] = answered_rounds
-                st.rerun()
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Results screen
 # ─────────────────────────────────────────────────────────────────────────────
@@ -743,16 +708,7 @@ def _render_round_results(rnd, player_id):
     st.caption("📜 El Señor Vascones ha revisado los resultados. Dice que no se esperaba esto de vosotros.")
     st.markdown("### 🏆 Puntuación de la ronda")
 
-    # Para Game 4: badge ⚡ al más rápido entre los que acertaron
     fastest_pid = None
-    if game_id == 4:
-        correct_with_time = [
-            (s["answered_at"], s["player_id"])
-            for s in scores
-            if s.get("answered_at") and s["final_score"] > 0
-        ]
-        if correct_with_time:
-            fastest_pid = min(correct_with_time, key=lambda x: x[0])[1]
 
     medals = ["🥇", "🥈", "🥉"]
     for i, s in enumerate(scores):
